@@ -10,6 +10,14 @@ const routes: RouteRecordRaw[] = [
     path: '/hello-threejs',
     component: () => import('../pages/HelloThreejs.vue')
   },
+  {
+    path: '/drawline',
+    component: () => import('../pages/DrawLine.vue')
+  },
+  {
+    path: '/olympic',
+    component: () => import('../pages/Olympic.vue')
+  }
 ]
 
 export default routes
