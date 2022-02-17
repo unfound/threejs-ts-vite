@@ -18,6 +18,7 @@ import WebGL from 'three/examples/jsm/capabilities/WebGL'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import skyTexture from '../images/sky.jpg'
 import landModel from '../models/land.glb'
+import icePandaModel from '../models/bingdwendwen.glb'
 
 const wrapper = ref<HTMLDivElement | null>(null)
 
@@ -43,17 +44,17 @@ onMounted(() => {
         scene.background = new TextureLoader().load(skyTexture)
         scene.fog = new Fog(0xffffff, 10, 100) // 雾气
         // 设置阳光
-        // const cubeGeometry = new BoxGeometry(0.001, 0.001, 0.001)
-        // const cubeMaterial = new MeshLambertMaterial({ color: 0xdc161a})
-        // const cube = new Mesh(cubeGeometry, cubeMaterial)
-        // cube.position.set(0, 0, 0)
-        const target = new Object3D()
-        target.position.set(0, 0, 0)
-        target.visible = false
+        const cubeGeometry = new BoxGeometry(0.001, 0.001, 0.001)
+        const cubeMaterial = new MeshLambertMaterial({ color: 0xdc161a})
+        const cube = new Mesh(cubeGeometry, cubeMaterial)
+        cube.position.set(0, 0, 0)
+        // const target = new Object3D()
+        // target.position.set(0, 0, 0)
+        // target.visible = false
         const light = new DirectionalLight(0xffffff, 1)
         light.position.set(16, 16, 8)
         light.castShadow = true // 开启阴影
-        light.target = target
+        light.target = cube
         light.shadow.mapSize.width = 512 * 12
         light.shadow.mapSize.height = 512 * 12
         light.shadow.camera.top = 40
@@ -65,35 +66,80 @@ onMounted(() => {
         scene.add(new AmbientLight(0xcfffff))
         // 载入管理器
         const manager = new LoadingManager()
+        manager.onStart = (url, loaded, total) => {};
+        manager.onLoad = () => { console.log('Loading complete!') };
+        manager.onProgress = (url, loaded, total) => {}
         // 添加地面
         const loader = new GLTFLoader(manager)
         const meshes = []
         let land
-        loader.load(landModel, function (mesh) {
-            // mesh.scene.traverse(function (child) {
-            //     if (child.isMesh) {
-            //         meshes.push(child)
-            //         child.material.metalness = .1
-            //         child.material.roughness = .8
-            //         // 地面
-            //         if (child.name === 'Mesh_2') {
-            //             child.material.metalness = .5;
-            //             child.receiveShadow = true;
-            //         }
-            //         // 围巾
-            //         if (child.name === 'Mesh_17') {
-            //             child.material.metalness = .2;
-            //             child.material.roughness = .8;
-            //         }
-            //         // 帽子
-            //         if (child.name === 'Mesh_17') { }
-            //     }
-            // })
-            mesh.scene.rotation.y = Math.PI / 4
-            mesh.scene.position.set(15, -20, 0)
-            mesh.scene.scale.set(.9, .9, .9)
-            land = mesh.scene
-            scene.add(land)
+        // loader.load(landModel, function (mesh) {
+        //     mesh.scene.traverse(function (child) {
+        //         if (child.isMesh) {
+        //             meshes.push(child)
+        //             child.material.metalness = .1
+        //             child.material.roughness = .8
+        //             // 地面
+        //             if (child.name === 'Mesh_2') {
+        //                 child.material.metalness = .5;
+        //                 child.receiveShadow = true;
+        //             }
+        //             // 围巾
+        //             if (child.name === 'Mesh_17') {
+        //                 child.material.metalness = .2;
+        //                 child.material.roughness = .8;
+        //             }
+        //             // 帽子
+        //             if (child.name === 'Mesh_17') { }
+        //         }
+        //     })
+        //     mesh.scene.rotation.y = Math.PI / 4
+        //     mesh.scene.position.set(15, -20, 0)
+        //     mesh.scene.scale.set(.9, .9, .9)
+        //     land = mesh.scene
+        //     scene.add(land)
+        // }, undefined, (err) => {
+        //     console.error(err)
+        // })
+        // 冰墩墩
+        loader.load(icePandaModel, function (mesh) {
+            mesh.scene.traverse(function (child) {
+            console.log(child)
+            if (child.isMesh) {
+                meshes.push(child)
+
+                if (child.name === '皮肤') {
+                    child.material.metalness = .3;
+                    child.material.roughness = .8;
+                }
+
+                if (child.name === '外壳') {
+                    child.material.transparent = true;
+                    child.material.opacity = .4;
+                    child.material.metalness = .4;
+                    child.material.roughness = 0;
+                    child.material.refractionRatio = 1.6;
+                    child.castShadow = true;
+                    child.material.envMap = new TextureLoader().load(skyTexture);
+                    child.material.envMapIntensity = 1;
+                }
+
+                if (child.name === '围脖') {
+                    child.material.transparent = true;
+                    child.material.opacity = .6;
+                    child.material.metalness = .4;
+                    child.material.roughness = .6;
+                }
+            }
+            });
+
+            mesh.scene.rotation.y = Math.PI / 24;
+            mesh.scene.position.set(-5, -11.5, 0);
+            mesh.scene.scale.set(24, 24, 24);
+
+            scene.add(mesh.scene);
+        }, undefined, (err) => {
+            console.error(err)
         })
         function animate () {
             requestAnimationFrame(animate)
