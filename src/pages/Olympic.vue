@@ -11,11 +11,13 @@ import {
     MeshLambertMaterial,
     Mesh,
     Object3D,
-    AmbientLight
+    AmbientLight,
+    LoadingManager
 } from 'three'
 import WebGL from 'three/examples/jsm/capabilities/WebGL'
-import GLTFLoader from 'three/examples/jsm/loaders/GLTFLoader'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import skyTexture from '../images/sky.jpg'
+import landModel from '../models/land.glb'
 
 const wrapper = ref<HTMLDivElement | null>(null)
 
@@ -61,9 +63,38 @@ onMounted(() => {
         scene.add(light)
         // 环境光
         scene.add(new AmbientLight(0xcfffff))
-
+        // 载入管理器
+        const manager = new LoadingManager()
         // 添加地面
-
+        const loader = new GLTFLoader(manager)
+        const meshes = []
+        let land
+        loader.load(landModel, function (mesh) {
+            // mesh.scene.traverse(function (child) {
+            //     if (child.isMesh) {
+            //         meshes.push(child)
+            //         child.material.metalness = .1
+            //         child.material.roughness = .8
+            //         // 地面
+            //         if (child.name === 'Mesh_2') {
+            //             child.material.metalness = .5;
+            //             child.receiveShadow = true;
+            //         }
+            //         // 围巾
+            //         if (child.name === 'Mesh_17') {
+            //             child.material.metalness = .2;
+            //             child.material.roughness = .8;
+            //         }
+            //         // 帽子
+            //         if (child.name === 'Mesh_17') { }
+            //     }
+            // })
+            mesh.scene.rotation.y = Math.PI / 4
+            mesh.scene.position.set(15, -20, 0)
+            mesh.scene.scale.set(.9, .9, .9)
+            land = mesh.scene
+            scene.add(land)
+        })
         function animate () {
             requestAnimationFrame(animate)
             renderer.render(scene, camera)
