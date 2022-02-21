@@ -28,6 +28,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import WebGL from 'three/examples/jsm/capabilities/WebGL'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import Stats from 'three/examples/jsm/libs/stats.module'
+import TWEEN from '@tweenjs/tween.js'
 import skyTexture from '../images/sky.jpg'
 import snowTexture from '../images/snow.png'
 import landModel from '../models/land.glb'
@@ -37,8 +38,10 @@ import flagTexture from '../images/flag.png'
 import treeModel from '../models/tree.gltf'
 import treeTexture from '../images/tree.png'
 import { isMesh } from '../utils/type-utils'
+import Animations from '../utils/Animations'
 
 const wrapper = ref<HTMLDivElement | null>(null)
+const loadingProcess = ref<number>(0)
 
 onMounted(() => {
     if (wrapper.value) {
@@ -59,8 +62,8 @@ onMounted(() => {
         renderer.shadowMap.enabled = true
         wrapper.value.append(renderer.domElement)
         // 设置摄像机
-        const camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 20, 100)
-        camera.position.set(2, 10, 30)
+        const camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100)
+        camera.position.set(12, 30, 36)
         camera.lookAt(0, 0, 0)
         // 设置场景
         const scene = new Scene()
@@ -87,7 +90,20 @@ onMounted(() => {
         const manager = new LoadingManager()
         manager.onStart = (url, loaded, total) => {};
         manager.onLoad = () => { console.log('Loading complete!') };
-        manager.onProgress = (url, loaded, total) => {}
+        let timer: number
+        let controls: OrbitControls
+        manager.onProgress = (url, loaded, total) => {
+            if (Math.floor(loaded / total * 100) === 100) {
+                timer && clearTimeout(timer)
+
+                timer = setTimeout(() => {
+                    loadingProcess.value = 100
+                    Animations.animateCamera(camera, controls, { x: 2, y: 10, z: 30 }, { x: 0, y: 0, z: 5 }, 3000, () => {});
+                }, 800)
+            } else {
+                loadingProcess.value = Math.floor(loaded / total * 100)
+            }
+        }
         // 添加地面
         const loader = new GLTFLoader(manager)
         const meshes = []
@@ -238,12 +254,12 @@ onMounted(() => {
             scene.add(mesh.scene)
 
             const tree2 = mesh.scene.clone()
-            tree2.position.set(-20, -12, -30)
+            tree2.position.set(-20, -12, -40)
             tree2.scale.set(18, 18, 18)
             scene.add(tree2)
 
             const tree3 = mesh.scene.clone()
-            tree3.position.set(-30, -12, -10)
+            tree3.position.set(-32, -12, -10)
             tree3.scale.set(18, 18, 18)
             scene.add(tree3)
         })
@@ -283,7 +299,7 @@ onMounted(() => {
         scene.add(points);
 
         // 摄像头轨道控制器
-        const controls = new OrbitControls(camera, renderer.domElement);
+        controls = new OrbitControls(camera, renderer.domElement);
         controls.target.set(0, 0, 0);
         controls.enableDamping = true;
         controls.enablePan = false;
@@ -300,6 +316,7 @@ onMounted(() => {
             requestAnimationFrame(animate)
             stats && stats.update()
             controls && controls.update()
+            TWEEN && TWEEN.update()
             renderer && renderer.render(scene, camera)
             for (let i = 0; i < vertices.length; i += 3) {
                 const speedIndex = i / 3
@@ -331,5 +348,24 @@ onMounted(() => {
 </script>
 
 <template>
-    <div ref="wrapper"></div>
+    <p v-show="loadingProcess < 100" class="loadingProcess">{{ loadingProcess }}%</p>
+    <div ref="wrapper" v-show="loadingProcess === 100"></div>
 </template>
+
+<style>
+html {
+    height: 100%;
+}
+body {
+    position: relative;
+    min-height: 100%;
+}
+.loadingProcess {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate3d(-50%, -50%, 0);
+    font-size: 36px;
+    font-weight: 900;
+}
+</style>
