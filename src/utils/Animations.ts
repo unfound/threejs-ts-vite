@@ -1,8 +1,23 @@
-import TWEEN from "@tweenjs/tween.js";
+import TWEEN from "@tweenjs/tween.js"
+import type { PerspectiveCamera  } from 'three'
+import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+
+interface Vector3 {
+  x: number,
+  y: number,
+  z: number
+}
+type AnyFunction = () => any
 
 const Animations = {
   //相机移动实现漫游等动画
-  animateCamera: (camera, controls, newP, newT, time = 2000, callBack) => {
+  animateCamera: (
+    camera: PerspectiveCamera,
+    controls: OrbitControls,
+    newPosition: Vector3,
+    newTarget: Vector3,
+    time = 2000,
+    callBack: AnyFunction) => {
     var tween = new TWEEN.Tween({
       x1: camera.position.x, // 相机x
       y1: camera.position.y, // 相机y
@@ -12,12 +27,12 @@ const Animations = {
       z2: controls.target.z, // 控制点的中心点z
     });
     tween.to({
-        x1: newP.x,
-        y1: newP.y,
-        z1: newP.z,
-        x2: newT.x,
-        y2: newT.y,
-        z2: newT.z,
+        x1: newPosition.x,
+        y1: newPosition.y,
+        z1: newPosition.z,
+        x2: newTarget.x,
+        y2: newTarget.y,
+        z2: newTarget.z,
       },
       time
     );
@@ -32,7 +47,7 @@ const Animations = {
     });
     tween.onComplete(function () {
       controls.enabled = true;
-      callBack();
+      callBack && callBack();
     });
     tween.easing(TWEEN.Easing.Cubic.InOut);
     tween.start();
