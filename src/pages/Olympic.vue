@@ -51,8 +51,11 @@ onMounted(() => {
             return
         }
         // 性能测试器
-        const stats = Stats()
-        document.body.appendChild(stats.dom)
+        let stats: Stats
+        if (import.meta.env.DEV) {
+            stats = Stats()
+            document.body.appendChild(stats.dom)
+        }
         // 初始化时钟
         const clock = new Clock();
         // 初始化渲染器，开启抗锯齿
@@ -348,7 +351,13 @@ onMounted(() => {
 </script>
 
 <template>
-    <p v-show="loadingProcess < 100" class="loadingProcess">{{ loadingProcess }}%</p>
+    <div class="loadingProcess" v-show="loadingProcess < 100">
+        <p style="font-size: 18px;">冰墩墩正在滚来</p>
+        <div>
+            <img src="../images/panda.png" alt="冰墩墩wink">
+        </div>
+        <p>{{loadingProcess}}%</p>
+    </div>
     <div ref="wrapper" v-show="loadingProcess === 100"></div>
 </template>
 
@@ -367,5 +376,11 @@ body {
     transform: translate3d(-50%, -50%, 0);
     font-size: 36px;
     font-weight: 900;
+}
+.loadingProcess img {
+    width: 128px;
+}
+.loadingProcess p {
+    margin: 0;
 }
 </style>

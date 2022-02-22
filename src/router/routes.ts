@@ -4,6 +4,7 @@ import HelloWorld from '../pages/HelloWorld.vue'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    redirect: '/olympic',
     component: HelloWorld
   },
   {
