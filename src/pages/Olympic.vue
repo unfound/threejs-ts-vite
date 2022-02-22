@@ -352,10 +352,10 @@ onMounted(() => {
 
 <template>
     <div class="loadingProcess" v-show="loadingProcess < 100">
-        <p style="font-size: 18px;">冰墩墩正在滚来</p>
         <div>
-            <img src="../images/panda.png" alt="冰墩墩wink">
+            <img src="../images/gungun.gif" alt="冰墩墩wink">
         </div>
+        <p style="font-size: 18px;">冰墩墩正在滚来...</p>
         <p>{{loadingProcess}}%</p>
     </div>
     <div ref="wrapper" v-show="loadingProcess === 100"></div>
@@ -371,14 +371,14 @@ body {
 }
 .loadingProcess {
     position: absolute;
-    left: 50%;
     top: 50%;
-    transform: translate3d(-50%, -50%, 0);
+    transform: translate3d(0, -50%, 0);
     font-size: 36px;
     font-weight: 900;
+    text-align: center;
 }
 .loadingProcess img {
-    width: 128px;
+    width: 360px;
 }
 .loadingProcess p {
     margin: 0;
